@@ -1,7 +1,10 @@
 <?php
 
-require_once ('../../../wp-load.php');
 $url = $argv[1];
+$current_path = __DIR__ ;
+$site_dir = explode ('/wp-content', $current_path)[0];
+$wp_load = "{$site_dir}/wp-load.php";
+require_once ($wp_load);
 
 $dealer_first_page_dom = supercarros_get_dom ($url);
 $cars_url = array_map (function ($url) {
@@ -71,9 +74,9 @@ function supercarros_get_dom ($url) {
       uncomment following lines  to print HTML result to a file,
       in case the site has different page to serve when accessed through CURL instead of regular web browser
       we can get xpath from it then
-    */
       $file = plugin_dir_path( __FILE__ ) . 'page.html';
       file_put_contents($file, $response);
+    */
 
     curl_close($curl);
 
@@ -108,6 +111,14 @@ function supercarros_car_url_to_listing ($car_page_url) {
     $dom = supercarros_get_dom ($car_page_url);
     $car = supercarros_get_attributes ($dom);
     supercarros_create_listing ($car);
+    /*
+        uncomment following lines to debug to text file
+        $myfile = fopen ('/Applications/MAMP/htdocs/wphenri/wp-content/plugins/autoapp-silent-crawler/logs.txt', 'a');
+        $date = new DateTime();
+        $txt = $date->format('Y-m-d H:i:s');
+        fwrite($myfile, "\n". $txt . $car_page_url);
+        fclose($myfile);
+    */
 }
 
 function supercarros_get_attributes ($car_page_dom) {
