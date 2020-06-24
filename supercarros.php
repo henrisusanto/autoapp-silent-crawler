@@ -1,29 +1,66 @@
 <?php
 
 $url = $argv[1];
+$user_id = $argv[2];
 $current_path = __DIR__ ;
 $site_dir = explode ('/wp-content', $current_path)[0];
 $wp_load = "{$site_dir}/wp-load.php";
 require_once ($wp_load);
+supercarros_start ($user_id);
 
-$dealer_first_page_dom = supercarros_get_dom ($url);
-$cars_url = array_map (function ($url) {
-    return 'https://www.supercarros.com' . $url;
-}, supercarros_get_cars_url ($dealer_first_page_dom));
+function supercarros_debug ($txt) {
+    $myfile = fopen (__DIR__ . '/supercarros.log', 'a');
+    fwrite($myfile, "\n". $txt);
+    fclose($myfile);
+}
 
-foreach ($cars_url as $url) supercarros_car_url_to_listing ($url);
-$dealer_pages_url = array_map (function ($url) {
-    return 'https://www.supercarros.com' . $url;
-}, supercarros_get_dealer_pages_url ($dealer_first_page_dom));
+function supercarros_reset ($user_id) {
+    $query = new WP_Query ();
+    $posts = $query->query (array(
+        'post_type' => 'listings',
+        'post_status' => 'draft',
+        'post_author' => $user_id,
+        'posts_per_page' => -1
+    ));
+    $postIDs = array_map (function ($post) {
+        return $post->ID;
+    }, $posts);
+    wp_reset_postdata();
 
-foreach ($dealer_pages_url as $dp_url) {
-    $dealer_page_dom = supercarros_get_dom ($dp_url);
+    $photos = $query->query (array(
+        'post_type' => 'attachment',
+        'post_status' => 'any',
+        'post_parent' => $postIDs,
+        'posts_per_page' => -1
+    ));
+    wp_reset_postdata();
+    $photoIDs = array_map (function ($post) {
+        return $post->ID;
+    }, $photos);
+    foreach ($photoIDs as $aid) wp_delete_attachment ($aid, true);
+    foreach ($postIDs as $pid) wp_delete_post ($pid, true);
+}
+
+function supercarros_start ($user_id) {
+    $dealer_first_page_dom = supercarros_get_dom ($url);
     $cars_url = array_map (function ($url) {
         return 'https://www.supercarros.com' . $url;
-    }, supercarros_get_cars_url ($dealer_page_dom));
-    foreach ($cars_url as $url) {
-        supercarros_car_url_to_listing ($url);
-    }
+    }, supercarros_get_cars_url ($dealer_first_page_dom));
+
+    foreach ($cars_url as $url) supercarros_car_url_to_listing ($url, $user_id);
+    $dealer_pages_url = array_map (function ($url) {
+        return 'https://www.supercarros.com' . $url;
+    }, supercarros_get_dealer_pages_url ($dealer_first_page_dom));
+
+    foreach ($dealer_pages_url as $dp_url) {
+        $dealer_page_dom = supercarros_get_dom ($dp_url);
+        $cars_url = array_map (function ($url) {
+            return 'https://www.supercarros.com' . $url;
+        }, supercarros_get_cars_url ($dealer_page_dom));
+        foreach ($cars_url as $url) {
+            supercarros_car_url_to_listing ($url, $user_id);
+        }
+    }   
 }
 
 function supercarros_get_xpath ($name) {
@@ -81,7 +118,7 @@ function supercarros_get_dom ($url) {
     curl_close($curl);
 
     $dom = new DOMDocument();
-    $dom->loadHTML($response);
+    @$dom->loadHTML($response);
     return new DomXpath($dom);
 }
 
@@ -107,18 +144,10 @@ function supercarros_get_cars_url ($dealer_page_dom) {
     return $cars;
 }
 
-function supercarros_car_url_to_listing ($car_page_url) {
+function supercarros_car_url_to_listing ($car_page_url, $user_id) {
     $dom = supercarros_get_dom ($car_page_url);
     $car = supercarros_get_attributes ($dom);
-    supercarros_create_listing ($car);
-    /*
-        uncomment following lines to debug to text file
-        $myfile = fopen ('/Applications/MAMP/htdocs/wphenri/wp-content/plugins/autoapp-silent-crawler/logs.txt', 'a');
-        $date = new DateTime();
-        $txt = $date->format('Y-m-d H:i:s');
-        fwrite($myfile, "\n". $txt . $car_page_url);
-        fclose($myfile);
-    */
+    supercarros_create_listing ($car, $user_id);
 }
 
 function supercarros_get_attributes ($car_page_dom) {
@@ -159,18 +188,20 @@ function supercarros_get_attributes ($car_page_dom) {
     $car['car_features'] = array ();
     $xpath = supercarros_get_xpath ('car_features');
     foreach ($car_page_dom->query($xpath) as $node) {
+        if ('display:none;' === $node->getAttribute ('style')) continue;
         $car['car_features'][] = $node->nodeValue;
     }
 
     return $car;
 }
 
-function supercarros_create_listing ($car) {
+function supercarros_create_listing ($car, $user_id) {
     $my_post = array(
         'post_title'    => wp_strip_all_tags($car['car_name']),
         'post_content'  => '',
         'post_status'   => 'draft',
-        'post_type' => 'listings'
+        'post_type' => 'listings',
+        'post_author' => $user_id
     );
 	$post_id = wp_insert_post ($my_post);
 
@@ -221,8 +252,8 @@ function supercarros_insert_attachment_from_url ($url, $parent_post_id = null) {
 	if ( !class_exists( 'WP_Http' ) )
 		include_once( ABSPATH . WPINC . '/class-http.php' );
 
-	$http = new WP_Http();
-	$response = $http->request( $url );
+    $http = new WP_Http();
+    $response = $http->request ($url);
 	if ( $response['response']['code'] != 200 ) {
 		return false;
 	}
