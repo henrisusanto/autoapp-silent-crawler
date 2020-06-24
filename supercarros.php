@@ -231,12 +231,12 @@ function supercarros_create_listing ($car, $user_id) {
 	// additional features
 	foreach ($car['car_features'] as $feature) {
 		$term_name = $feature;
-		$taxonomy = 'stm_additional_features';
+        $taxonomy = 'stm_additional_features';
 
-		if (!term_exists ($term_name, $taxonomy)) wp_insert_term ($term_name, $taxonomy);
-		$term = get_term_by ('name', $term_name, $taxonomy);
-		$slug = $term->slug;
-		add_post_meta ($post_id, 'additional_features', $term_name);
+		if (!term_exists ($term_name, $taxonomy)) {
+            wp_insert_term ($term_name, $taxonomy);
+        }
+		add_post_meta ($post_id, 'additional_features', implode (',', $car['car_features']));
 	}
 
 	// photos
