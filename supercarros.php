@@ -170,6 +170,9 @@ function supercarros_get_attributes ($car_page_dom) {
         $car[$field] = $car_page_dom->query($xpath)->item(0)->nodeValue;
     }
 
+    preg_match_all('!\d+!', $car['car_price'], $matches);
+    $car['car_price'] = implode ('', $matches[0]);
+
     $car['car_photos'] = array ();
     $xpath = supercarros_get_xpath ('car_photos');
     foreach ($car_page_dom->query($xpath) as $node) {
