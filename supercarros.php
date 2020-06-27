@@ -6,7 +6,7 @@ $current_path = __DIR__ ;
 $site_dir = explode ('/wp-content', $current_path)[0];
 $wp_load = "{$site_dir}/wp-load.php";
 require_once ($wp_load);
-supercarros_start ($user_id);
+supercarros_start ($url, $user_id);
 
 function supercarros_debug ($txt) {
     $myfile = fopen (__DIR__ . '/supercarros.log', 'a');
@@ -22,26 +22,23 @@ function supercarros_reset ($user_id) {
         'post_author' => $user_id,
         'posts_per_page' => -1
     ));
-    $postIDs = array_map (function ($post) {
-        return $post->ID;
-    }, $posts);
     wp_reset_postdata();
-
-    $photos = $query->query (array(
-        'post_type' => 'attachment',
-        'post_status' => 'any',
-        'post_parent' => $postIDs,
-        'posts_per_page' => -1
-    ));
-    wp_reset_postdata();
-    $photoIDs = array_map (function ($post) {
-        return $post->ID;
-    }, $photos);
-    foreach ($photoIDs as $aid) wp_delete_attachment ($aid, true);
-    foreach ($postIDs as $pid) wp_delete_post ($pid, true);
+    foreach ($posts as $post) {
+        $photos = $query->query (array(
+            'post_type' => 'attachment',
+            'post_status' => 'any',
+            'post_parent' => $post->ID,
+            'posts_per_page' => -1
+        ));
+        wp_reset_postdata();
+        foreach ($photos as $photo) {
+            wp_delete_attachment ($photo->ID, true);
+        }
+        wp_delete_post ($post->ID, true);
+    }
 }
 
-function supercarros_start ($user_id) {
+function supercarros_start ($url, $user_id) {
     $dealer_first_page_dom = supercarros_get_dom ($url);
     $cars_url = array_map (function ($url) {
         return 'https://www.supercarros.com' . $url;
@@ -257,7 +254,7 @@ function supercarros_insert_attachment_from_url ($url, $parent_post_id = null) {
 
     $http = new WP_Http();
     $response = $http->request ($url);
-	if ( $response['response']['code'] != 200 ) {
+	if ( $response['errors']) {
 		return false;
 	}
 
