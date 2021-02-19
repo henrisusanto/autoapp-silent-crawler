@@ -36,9 +36,9 @@ function autoapp_silent_crawler_form_submission_handler () {
     $user_id = get_current_user_id ();
     $current_path = __DIR__ ;
 
-    // $mamp_dir = explode ('/htdocs', $current_path)[0];
-    // $php_path = "{$mamp_dir}/bin/php/php7.3.8/bin/";
-    $php_path = '';
+    $mamp_dir = explode ('/htdocs', $current_path)[0];
+    $php_path = "{$mamp_dir}/bin/php/php7.3.8/bin/";
+    // $php_path = ''; uncomment for production
 
     exec ("{$php_path}php {$current_path}/supercarros.php {$url} {$user_id} >/dev/null &");
 }

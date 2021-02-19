@@ -9,7 +9,7 @@ require_once ($wp_load);
 supercarros_start ($url, $user_id);
 
 function supercarros_debug ($txt) {
-    $myfile = fopen (__DIR__ . '/supercarros.log', 'a');
+    $myfile = fopen (__DIR__ . '/supercarros-log.html', 'a');
     fwrite($myfile, "\n". $txt);
     fclose($myfile);
 }
