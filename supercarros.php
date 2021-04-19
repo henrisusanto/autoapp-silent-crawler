@@ -18,7 +18,7 @@ function supercarros_reset ($user_id) {
     $query = new WP_Query ();
     $posts = $query->query (array(
         'post_type' => 'listings',
-        'post_status' => 'draft',
+        'post_status' => 'published',
         'post_author' => $user_id,
         'posts_per_page' => -1
     ));
@@ -199,7 +199,7 @@ function supercarros_create_listing ($car, $user_id) {
     $my_post = array(
         'post_title'    => wp_strip_all_tags($car['car_name']),
         'post_content'  => '',
-        'post_status'   => 'draft',
+        'post_status'   => 'publish',
         'post_type' => 'listings',
         'post_author' => $user_id
     );
@@ -227,6 +227,27 @@ function supercarros_create_listing ($car, $user_id) {
 	add_post_meta( $post_id, 'stm_car_location', $car['car_address']);
 	add_post_meta( $post_id, 'stm_lat_car_admin', $car['car_lat']);
 	add_post_meta( $post_id, 'stm_lng_car_admin', $car['car_lng']);
+
+    // createdBy
+    add_post_meta( $post_id, 'stm_car_user', $user_id);
+
+    // MAKE (marca), MODEL(modelo, serie) & YEAR(ca-year)
+    $name = $car['car_name'];
+    $year = substr($name, -4);
+    $make = explode(' ', $name)[0];
+    $serie= str_replace($year, '', str_replace($make, '', $name));
+    $taxonomies = array (
+        'ca-year' => $year,
+        'make' => $make,
+        'serie' => $serie
+    );
+    foreach($taxonomies as $taxonomy => $term_name)
+    {
+        if (!term_exists ($term_name, $taxonomy)) wp_insert_term ($term_name, $taxonomy);
+        $term = get_term_by ('name', $term_name, $taxonomy);
+        $slug = $term->slug;
+        add_post_meta ($post_id, $taxonomy, $slug);
+    }
 
 	// additional features
 	foreach ($car['car_features'] as $feature) {
