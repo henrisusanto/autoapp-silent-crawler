@@ -266,6 +266,7 @@ function supercarros_create_listing ($car, $user_id) {
         $photoIDs[] = supercarros_insert_attachment_from_url ($src, $post_id);
 	}
 	add_post_meta ($post_id, 'gallery', $photoIDs);   
+    set_post_thumbnail($post_id, $photoIDs[0]);
 }
 
 function supercarros_insert_attachment_from_url ($url, $parent_post_id = null) {
