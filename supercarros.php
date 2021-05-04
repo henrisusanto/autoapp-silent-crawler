@@ -198,12 +198,44 @@ function supercarros_get_attributes ($car_page_dom) {
 function supercarros_create_listing ($car, $user_id) {
     $my_post = array(
         'post_title'    => wp_strip_all_tags($car['car_name']),
-        'post_content'  => '',
+        'post_content'  => '[vc_row][vc_column width="2/3" offset="vc_hidden-xs"][vc_row_inner el_class="titulo2"][vc_column_inner width="1/2"][stm_single_car_title][/vc_column_inner][vc_column_inner width="1/2"][stm_single_car_price][/vc_column_inner][/vc_row_inner][vc_row_inner][vc_column_inner offset="vc_hidden-xs"][stm_single_car_actions][stm_single_car_gallery][vc_column_text]
+<h4 class="regular size-h4">[bsa_pro_ad_space id=11]</h4>
+[/vc_column_text][vc_column_text]
+<h4 class="regular size-h4">Ficha técnica</h4>
+[/vc_column_text][stm_single_car_data][vc_column_text]
+<h4 class="regular size-h4">Equipamiento</h4>
+[/vc_column_text][stm_car_listing_features][/vc_column_inner][/vc_row_inner][vc_row_inner el_class="rowcalc2"][vc_column_inner el_class="calculadora1" width="1/2"][stm_single_car_calculator][vc_column_text]
+<div class="botonf">
+<div class="botonf">[popup_anything id="6460"]</div>
+</div>
+[/vc_column_text][/vc_column_inner][vc_column_inner width="1/2" el_id="seguro"][vc_column_text]
+<p style="text-align: center;">Proximamante</p>
+<p style="text-align: center;">Calculadora de Seguros</p>
+[/vc_column_text][vc_single_image image="4970" img_size="full" alignment="center"][/vc_column_inner][/vc_row_inner][/vc_column][vc_column width="1/3" el_class="sidebar" offset="vc_hidden-xs"][stm_car_dealer_info][vc_column_text][xyz-ips snippet="telefono"][/vc_column_text][vc_tta_accordion active_section="0" collapsible_all="true"][vc_tta_section i_position="right" i_icon_fontawesome="fas fa-user-tie" add_icon="true" title="QUIERO QUE ME CONTACTEN" tab_id="1608131086889-f1bc9f81-f65b59b2-e9a120f0-c87c"][stm_car_listing_contact_form form="1665"][/vc_tta_section][/vc_tta_accordion][stm_gmap map_zoom="18" image="9029"][vc_column_text]
+<h4 class="regular size-h4">[bsa_pro_ad_space id=12]</h4>
+[/vc_column_text][vc_column_text]
+<h4 class="regular size-h4">[bsa_pro_ad_space id=13]</h4>
+[/vc_column_text][/vc_column][/vc_row][vc_row el_class="similar"][vc_column offset="vc_hidden-xs" el_class="similar2"][vc_column_text]
+<h3 class="regular">Vehículos que te pueden interesar</h3>
+[/vc_column_text][stm_car_listing_similar][vc_column_text]
+<h4 class="regular size-h4">[bsa_pro_ad_space id=14]</h4>
+[/vc_column_text][/vc_column][/vc_row][vc_row][vc_column offset="vc_hidden-lg vc_hidden-md vc_hidden-sm"][stm_single_car_title][stm_single_car_price][stm_single_car_actions][vc_row_inner el_class="rensposivesingle"][vc_column_inner width="1/2"][stm_single_car_gallery][stm_car_dealer_info][/vc_column_inner][/vc_row_inner][/vc_column][/vc_row][vc_row][vc_column offset="vc_hidden-lg vc_hidden-md vc_hidden-sm"][vc_column_text]
+<h4 class="regular size-h4">[bsa_pro_ad_space id=11]</h4>
+[/vc_column_text][vc_column_text]
+<h4 class="regular size-h4">Ficha técnica</h4>
+[/vc_column_text][stm_single_car_data][vc_column_text]
+<h4 class="regular size-h4">Equipamiento</h4>
+[/vc_column_text][stm_car_listing_features][/vc_column][/vc_row][vc_row][vc_column offset="vc_hidden-lg vc_hidden-md vc_hidden-sm"][vc_column_text]
+<h3 class="regular">Vehículos que te pueden interesar</h3>
+[/vc_column_text][stm_car_listing_similar][/vc_column][/vc_row][vc_row][vc_column][vc_column_inner offset="vc_hidden-lg vc_hidden-md vc_hidden-sm"][stm_single_car_calculator][vc_column_text]
+<h4 class="regular size-h4">[bsa_pro_ad_space id=14]</h4>
+[/vc_column_text][/vc_column_inner][/vc_column][/vc_row]',
         'post_status'   => 'publish',
         'post_type' => 'listings',
         'post_author' => $user_id
     );
 	$post_id = wp_insert_post ($my_post);
+    add_post_meta ($post_id, '_wpb_vc_js_status', true); 
 
 	// free text attributes
 	$attributes = array ('car_name', 'car_price', 'car_mileage', 'car_engine');
@@ -265,7 +297,7 @@ function supercarros_create_listing ($car, $user_id) {
     foreach ($car['car_photos'] as $src) {
         $photoIDs[] = supercarros_insert_attachment_from_url ($src, $post_id);
 	}
-	add_post_meta ($post_id, 'gallery', $photoIDs);   
+	add_post_meta ($post_id, 'gallery', $photoIDs); 
     set_post_thumbnail($post_id, $photoIDs[0]);
 }
 
