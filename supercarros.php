@@ -167,6 +167,8 @@ function supercarros_get_attributes ($car_page_dom) {
         $car[$field] = $car_page_dom->query($xpath)->item(0)->nodeValue;
     }
 
+    $car['car_currency'] = substr($car['car_price'], 0, 3);
+
     preg_match_all('!\d+!', $car['car_price'], $matches);
     $car['car_price'] = implode ('', $matches[0]);
 
@@ -254,6 +256,14 @@ function supercarros_create_listing ($car, $user_id) {
 		$slug = $term->slug;
 		add_post_meta ($post_id, $taxonomy, $slug);
 	}
+
+    // currency
+	$term_name = $car['car_currency'];
+	$taxonomy = 'moneda';
+	if (!term_exists ($term_name, $taxonomy)) wp_insert_term ($term_name, $taxonomy);
+	$term = get_term_by ('name', $term_name, $taxonomy);
+	$slug = $term->slug;
+	add_post_meta ($post_id, $taxonomy, $slug);
 
 	// address, lat, & lng
 	add_post_meta( $post_id, 'stm_car_location', $car['car_address']);
